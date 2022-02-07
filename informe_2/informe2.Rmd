@@ -1,0 +1,189 @@
+---
+lang: es-ES
+title: |
+  | \vspace{3cm} \LARGE Segundo informe
+  | \vspace{0,5cm} \large Grupo 74
+  | \vspace{0,5cm} \large Ana Inés García Pintos, 5.186.144-1
+  | \vspace{0,5cm} \large Federico Ramos Maltez, 5.247.724-7
+  | \vspace{0,5cm} \large Nicolás Fernández Sauleda, 5.242.510-3
+date: "22/11/2021"
+geometry: margin=2cm
+header-includes: |
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+output:
+  pdf_document:
+    toc: yes
+    number_sections: no
+---
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+set.seed(7474)
+library(ggplot2)
+```
+
+\pagebreak
+# Ejercicio 1: _Intervalos de confianza_
+Primeramente aclarar que se utiliza una semilla de valor _7474_ para facilitar la reproductibilidad. Y también agregar que nos tocó una distribución $F\sim U(2, 10)$
+
+## 1.a) _Media y varianza_
+
+``` {r}
+# Valores que se utilizan para realizar los cálculos.
+n1 <- 150
+min <- 2
+max <- 10
+# Cálculo de la media y de la varianza teórica respectivamente
+mu1 <- (min+max)/2
+var1 <- (((max-min)^2)/12/(n1))
+```
+El valor de la *$\mu_{0}$* teórica es de *`r mu1`* y de la *$\sigma_{0}^{2}$* teórica es igual a *`r round(var1, 3)`*.
+
+## 1.b) _Intervalo de confianza para F_
+Para realizar los intervalos de confianza se construye una función llamada `unif.inter`, que se utilizará en la parte _(d)_.
+``` {r, results='hide'}
+# Construcción de la función
+unif.inter <- function(datos, alpha = 0.05){
+  n = length(datos)
+  z = qnorm(1-alpha/2)
+  xn = mean(datos)
+  k = sd(datos)/sqrt(n)
+  intervalo = c(xn-k*z,xn+k*z)
+  return (intervalo)
+}
+# Aplicando la función
+intervalosB <- unif.inter(runif(n1, min, max))
+```
+Se puede ver que el intervalo de confianza teórico a nivel 95% para la media teórica de la distribución _F_ es $I(F)=$ [`r round(intervalosB[1], 2)`, `r round(intervalosB[2], 2)`]
+
+## 1.c) _Simulaciones de_ $\overline{X}_{150}$
+```{r, out.width="80%", fig.align = 'center'}
+# Construye un vector de largo 10^4 y realiza un bucle para crear simulaciones de X150.
+v <- c()
+for (j in 1:100000) {
+  v <- c(v, mean(runif(n1, min, max)))
+}
+# Realiza histograma y superpone una normal de parámetros mu y sigma
+hist(v, freq = FALSE, xlab = expression(Media ~ de ~ la ~ variable ~ bar(X)[n]), main= expression(Histograma ~ de ~ bar(X)[150]), ylab = "Densidad", breaks=40, xlim=c(5,7), col=heat.colors(40, 0.5), border=F)
+curve(dnorm(x,mean=mu1, sd = sqrt(var1)), add = TRUE, lwd=2, col="#E69F00")
+```
+
+## 1.d) _Proporción de simulaciones que no contienen_ $\mu_{0}$
+
+```{r}
+media_en_intervalo <- c()
+# Bucle donde genera variables aleatorias y testea si su media cae en el intervalo de confianza al 95%, si cae almacena el valor 0, y si no cae, almacena el valor 1 dentro del vector media_en_intervalo.
+for (i in 1:n1) {
+  muestra <- runif(n1, min, max)
+  intervalo <- unif.inter(muestra)
+  if  ((intervalo[1] <= mu1)&(intervalo[2]>=mu1)) {
+    media_en_intervalo <- c(media_en_intervalo, 0)
+  }
+  else {
+    media_en_intervalo <- c(media_en_intervalo, 1)
+  }
+}
+# Suma el vector y divide sobre el total de casos para conocer la proporción.
+proporcion <- sum(media_en_intervalo)/150
+```
+Resultado de la proporción `r round(proporcion, 3)`. Este valor debería tender al $\alpha$  utilizado que es de $0.05$.
+
+# Ejercicio 2: _p-valor_
+## 2.a) _Generación de la muestra y cálculo de p-valor._
+``` {r, results='hide'}
+datos2 <- runif(n1, min, max)
+x150 <- mean(datos2)
+# Se realiza una función para reutilizarla en la parte b
+calcula_pvalor <- function(datos, min, max) {
+  mean <- mean(datos)
+  sd <- sd(datos)
+  n <- length(datos)
+  mu0 <- (min+max)/2
+  p_valor <- 2*(1-(pnorm(sqrt(n)/sd * abs(mean-mu0))))
+  return(p_valor)
+}
+calcula_pvalor(datos2, min, max)
+```
+Se obtiene un _p-valor=_ `r round(calcula_pvalor(datos2, min, max), 3)` por lo que no hay evidencia suficiente para rechazar $H_{0}$ con un $\alpha =0.05$.
+
+## 2.b y c) _p-valor para mil muestras y test de Kolmogorov-Smirnov_
+```{r}
+promedio_muestras <- c()
+pvalores_muestras <- c()
+for (i in 1:1000) {
+  muestrai <- runif(n1, min, max)
+  promedio_muestras <- c(promedio_muestras, mean(muestrai))
+  pvalores_muestras <- c(pvalores_muestras, calcula_pvalor(muestrai, min, max))
+}
+test_ks1 <- ks.test(pvalores_muestras, punif)
+test_ks1
+```
+
+El test de _Kolmogorov-Smirnov_ nos dió un _p-valor=_ `r round(test_ks1$p.value, 3)` a un $\alpha=0.01$, se puede observar para distancia cercanas a 0 p-valores mayores, por lo tanto existe evidencia significativa para no rechazar $H_{o}$. Esto significa que los los mil _p-valores_ se aproximan a una $U(0,1)$.
+
+# Ejercicio 3 _Comparación de dos muestras_
+## 3.a) _Carga y análisis de la tabla_
+
+```{r}
+# Importa las muestras
+datos3 <- read.table("datosej3.txt", sep=" ", header=TRUE)
+muestraA <- datos3$Muestra_A
+muestraB <- datos3$Muestra_B
+# Promedio y desvío estándar para ambas muestras
+promedio3 <- c(mean(muestraA), mean(muestraB))
+sd3 <- c(sd(muestraA), sd(muestraB))
+summary(datos3)
+```
+|Muestras| $\overline{X}$|$\sigma$|
+|:---:|---:|---:|
+|A|`r round(promedio3[1], 3)`|`r round(promedio3[2], 3)`|
+|B|`r round(sd3[1], 3)`|`r round(sd3[2], 3)`|
+
+## 3.b) _Boxplot para ambas muestras_
+```{r, fig.align = 'center',  fig.height = 5.5, fig.width = 7, out.width = "6in"}
+boxplot(datos3,ylim=c(-6,6), names=c("Muestra A", "Muestra B"), main="Boxplots para ambas muestras", col=c("indianred","skyblue"))
+```
+## 3.c) _Test de aleatoriedad_
+A continuación se testea la aleatoriedad de cada una de las muestras utilizando el test de spearman.
+``` {r}
+cor.test(muestraA, sort(muestraA), method = "spearman")
+cor.test(muestraB, sort(muestraB), method = "spearman")
+```
+Para ambas muestras obtuvimos _p-valores_$>0.05$, por lo tanto no hay evidencia suficiente para rechazar $H_{0}$, es decir, de que sean _i.i.d_
+
+## 3.d) _Test de independencia_
+Para testear la independencia de las muestras se utiliza el test de spearman, pero utilizando ambas muestras.
+```{r}
+cortestAB <- cor.test(muestraA, muestraB, method = "spearman")
+```
+No hay evidencia suficiente para rechazar $H_{0}$ bajo  $\alpha=0.05$, ya que tenemos un _p-valor=_ `r format(cortestAB$p.value,digits=3)`. Por lo tanto, ambas muestras provienen de distribuciones diferentes.
+
+## 3.e) _Kolmogorov-Smirnov_
+```{r}
+test_ks <- ks.test(muestraA, muestraB)
+test_ks
+```
+Ya que _p-valor=_ `r format(test_ks$p.value, digits=2)` hay evidencia suficiente para rechazar $H_{o}$, es decir que no provienen de la misma distribución.
+
+# Ejercicio 4 _Regresión lineal_
+```{r}
+# Importa y limpia los datos
+datos4 <- subset(read.csv("income.data.csv"), select=-c(X))
+hapiness <- datos4$happiness
+income <- datos4$income
+# Ajusta un modelo de regresión lineal
+modelo <- summary(lm(hapiness ~ income))
+```
+```{r echo = F, results='show'}
+print(modelo)
+```
+Se observa que el valor de $R^{2}=$ `r round(modelo$r.squared, 3)` por lo que el ajuste es bueno ya que explica el `r round(modelo$r.squared, 2)*100`% de los casos. Nuestra $h_{0}$ es que $\widehat{\beta_{0}}$ y $\widehat{\beta_{1}}$ sean 0, en nuestro caso el $\widehat{\beta_{0}}=$ `r round(modelo$coefficients[1], 3)` y el $\widehat{\beta_{1}}=$  `r round(modelo$coefficients[2], 3)` . Por otro lado los _p-valores_ nos dieron 0.02 y 2e-16 respectivamente. Por lo tanto podemos decir que rechazamos $h_{0}$ a un nivel de confianza igual a 5% y concluímos que nuestros coeficientes son significativos.
+
+```{r, out.width="80%", fig.align = 'center'}
+ggplot(datos4, aes(x = hapiness, y = income)) +
+  geom_point(color="skyblue") +
+  labs(x="Felicidad", y="Ingresos", title="Modelo de regresión lineal", subtitle="Felicidad vs. Ingresos")+
+  stat_smooth(method = "lm", col = "deeppink")+
+  theme_classic()
+```
+La pendiente es positiva y de valor `r round(modelo$coefficients[1], 3)` , existe una relación de proporcionalidad entre los ingresos y la felicidad, un aumento de ingresos provoca aumento de felicidad.

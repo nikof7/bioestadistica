@@ -1,0 +1,16 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{Ejercicio 1: \emph {Intervalos de confianza}}{2}{section*.2}%
+\contentsline {subsection}{1.a) \emph {Media y varianza}}{2}{section*.3}%
+\contentsline {subsection}{1.b) \emph {Intervalo de confianza para F}}{2}{section*.4}%
+\contentsline {subsection}{1.c) \emph {Simulaciones de} \(\overline {X}_{150}\)}{2}{section*.5}%
+\contentsline {subsection}{1.d) \emph {Proporción de simulaciones que no contienen} \(\mu _{0}\)}{3}{section*.6}%
+\contentsline {section}{Ejercicio 2: \emph {p-valor}}{3}{section*.7}%
+\contentsline {subsection}{2.a) \emph {Generación de la muestra y cálculo de p-valor.}}{3}{section*.8}%
+\contentsline {subsection}{2.b y c) \emph {p-valor para mil muestras y test de Kolmogorov-Smirnov}}{4}{section*.9}%
+\contentsline {section}{Ejercicio 3 \emph {Comparación de dos muestras}}{4}{section*.10}%
+\contentsline {subsection}{3.a) \emph {Carga y análisis de la tabla}}{4}{section*.11}%
+\contentsline {subsection}{3.b) \emph {Boxplot para ambas muestras}}{5}{section*.12}%
+\contentsline {subsection}{3.c) \emph {Test de aleatoriedad}}{5}{section*.13}%
+\contentsline {subsection}{3.d) \emph {Test de independencia}}{6}{section*.14}%
+\contentsline {subsection}{3.e) \emph {Kolmogorov-Smirnov}}{6}{section*.15}%
+\contentsline {section}{Ejercicio 4 \emph {Regresión lineal}}{7}{section*.16}%

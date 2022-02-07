@@ -1,0 +1,69 @@
+---
+title: Práctico 9
+geometry: margin=1.5cm
+output: pdf_document
+header-includes:
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 5, fig.height = 4, fig.align = 'center')
+library(KScorrect)
+```
+## Ejercicio 1
+```{r }
+datos <- c(5.3,5.1,4.8,4.9,5.3,5.2,5.8,5.5,5.6,5.2)
+
+x <- seq(4.8, 5.8, 0.01)
+
+plot(x, punif(x, min = 4.8, max = 5.9), type = "l")
+lines(ecdf(datos))
+
+ks.test(datos,"punif", 4.8, 5.8)
+```
+
+## Ejercicio 3
+### Parte a
+```{r }
+datos2 <- c(49.83, 45.08, 49.33, 50.47, 51.29, 49.85, 51.93, 47.24, 45.77, 49.89, 49.04, 51.23, 52.63, 50.22, 49.11, 51.22)
+
+
+ks.test(datos2,"pnorm", 50, 2)
+```
+### Parte b
+```{r }
+# Estimo media y varianza
+Xn <- mean(datos2)
+desvio <- sd(datos2)^2
+```
+Los resultados de la parte b son: $\overline{X_n}=$ `r round(Xn, 2)` y $\widetilde{Var}=$ `r round(desvio,2)`
+
+```{r }
+u <- 50
+sigma <- 2
+estandarizados <- c()
+
+# Estandarizo los datos
+for (i in 1:16) {
+  a <- round((datos2[i]-u)/sigma, 3)
+  e <- cat(as.character(a), ", ")
+  estandarizados <- c(estandarizados, e)
+}
+
+# Histograma para visualizarlos
+hist(estandarizados, breaks = seq(-3,3,.5))
+```
+
+### Parte C
+```{r }
+Fn_z <- (sort(datos2)[4] - u)/sigma
+FN <- pnorm(Fn_z)
+D <- FN- 4/16
+```
+El $D$ nos dio un valor de `r round(D, 2)`
+
+```{r}
+# Test de Lilliefors, hay que cargar el paquete library(KScorrect)
+LcKS(estandarizados,"pnorm")["p.value"]
+```

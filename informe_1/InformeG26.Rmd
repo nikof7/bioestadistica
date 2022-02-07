@@ -1,0 +1,271 @@
+---
+lang: es-ES
+title: |
+  | \vspace{3cm} \LARGE Primer informe
+  | \vspace{0,5cm} \large Grupo 26
+author: "Marcia Cabral (4.321.990-1), Nicolás Fernández (5.242.510-3)"
+date: "15/10/2021"
+header-includes:
+  \usepackage{fvextra}
+  \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+output:
+  pdf_document:
+    toc: yes
+    number_sections: yes
+    fig_caption: yes
+  html_document:
+    toc: yes
+    df_print: paged
+---
+\pagebreak
+
+# Ejercicio 1: *Estimar población total.*
+
+## Parte 1
+
+Tiene una distribución hipergeométrica y su valor esperado es: 
+
+$$E(X)=\frac{n\times K}{N}$$
+
+Donde:
+
+$K=$ {*Cantidad de marcados*}
+
+$n=$ {*Cantidad de individuos por recaptura*}
+
+$N=$ {*Cantidad total*}
+
+## Parte 2
+El promedio converge a la esperanza teórica. Por lo tanto se puede despejar el valor de N de la siguiente forma:
+$$N = \frac{n\times K}{E(X)}$$
+## Parte 3
+```{r}
+# Crea un vector con 1000 individuos.
+pob_total <- c(1:1000)
+
+# Crea un vector con 100 elementos, que es la cantidad de recapturas.
+xtotal = 1:100
+
+# Vector en el que se almacenerá las coincidencias para cada recaptura.
+xn <- c()
+
+# Toma al azar una muestra de 50 indv de la población total.
+M <- sample(pob_total, 50) 
+
+# Itinera para obtener las recapturas.
+for (xi in xtotal) {
+  # Toma al azar una muestra de 80 indv de la población total.
+  M80 <- sample(pob_total, 80)
+  
+  # Cuenta cuántos elementos de M tiene la muestra de 80 indv.
+  coincidencias <- sum(M80 %in% M)
+  
+  # Almacena en un vector el número de coincidencias para cada recaptura.
+  xn <- c(xn, coincidencias) 
+}
+
+# Calcula el valor estimado de la población total utilizando la fórmula anterior con K=n.
+val_estimado <- (80*50) / mean(xn)
+```
+
+```{r echo=FALSE}
+cat("El valor estimado para n = 80 es igual a",round(val_estimado, 0))
+```
+
+```{r}
+# Vector de n distintos
+nDistintos <- seq(20 ,200 , by=20)
+
+# Preparativos
+xn2 <- c()
+val_estimado2 <- c()
+promedioDeni <- c()
+
+# Itinera dos veces, la primera para calcular para los diferentes n. Y la segunda para realizar las 100 recapturas.
+for (ni in nDistintos) {
+  for (xi2 in xtotal) {
+    Mni <- sample(pob_total, ni)
+    coincidencias2 <- sum(Mni %in% M)
+    xn2 <- c(xn2, coincidencias2)
+  }
+  # Realiza el promedio de la recaptura y lo utiliza para crear el vector de los valores estimados para cada n.
+  val_estimado2 <- c(val_estimado2, (ni*50) / mean(xn2))
+  # Limpia el vector de coincidencias
+  xn2 <- c()
+}
+```
+
+| Valores de n | Valores estimados |
+|:------------:|:-----------------:|
+|     `r nDistintos[1]`         |        `r round(val_estimado2)[1]`            |
+|     `r nDistintos[2]`         |        `r round(val_estimado2)[2]`            |
+|     `r nDistintos[3]`         |        `r round(val_estimado2)[3]`            |
+|     `r nDistintos[4]`         |        `r round(val_estimado2)[4]`            |
+|     `r nDistintos[5]`         |        `r round(val_estimado2)[5]`            |
+|     `r nDistintos[6]`         |        `r round(val_estimado2)[6]`            |
+|     `r nDistintos[7]`         |        `r round(val_estimado2)[7]`            |
+|     `r nDistintos[8]`         |        `r round(val_estimado2)[8]`            |
+|     `r nDistintos[9]`         |        `r round(val_estimado2)[9]`            |
+|     `r nDistintos[10]`        |        `r round(val_estimado2)[10]`            |
+### Conclusiones del ejercicio 1 {-}
+
+Para valores diferentes de $n$ se observa que el estimativo de la población total no cambia en gran medida. En lo personal esperaba encontrar valores más aproximados a la población total a medida de que el n crece.
+
+\pagebreak
+
+# Ejercicio 2: *Ley de los Grandes Números*
+Nuestro grupo cuenta con la distribución geométrica con $p = 0.18$.
+
+## Parte a y b
+
+```{r include = FALSE}
+# ESTE CÓDIGO NO SE VE]
+
+main1 <- expression(Valores ~ de ~ bar(X)[n] ~ para ~ cada ~ n)
+xlab1 <- 'n'
+ylab1 <- expression(bar(X)[n])
+colores1 <- c("#fafa6e", "#d7f171", "#b5e877", "#95dd7d", "#77d183", "#5bc489", "#3fb78d", "#23aa8f", "#009c8f", "#008d8c", "#007f86", "#0b717e", "#1c6373", "#255566", "#2a4858")
+```
+
+```{r} 
+# Crea un vector con los elementos n = 100, 200,..., 10^3
+n <- seq(100, 1000, by=100)
+
+# Preparación
+esperanzaEmpirica_1 <- c()
+p1 = 0.18
+
+# Itinera y calcula la esperanza para cada N (100, 200,..., 1000)
+for (n1 in n) {
+  esperanzaEmpirica_1 <- c(esperanzaEmpirica_1, mean(rgeom(n1,p1)))
+}
+
+# Calcula la esperanza teórica
+esperanzaTeorica_1 <- (1-p1)/ p1
+```
+```{r, out.width="85%", fig.align = 'center'}
+# Grafica los valores de Xn
+plot(n, esperanzaEmpirica_1, xlab=xlab1, ylab=ylab1, main=main1,
+     ylim=c(min(esperanzaEmpirica_1) - min(esperanzaEmpirica_1)/4,
+            max(esperanzaEmpirica_1) + (max(esperanzaEmpirica_1)/4)), pch=19, cex=1.5)
+axis(side = 1, at = n)
+abline(h = esperanzaTeorica_1, lwd=2)
+```
+El valor teórico esperado de la distribución es igual a `r round(esperanzaTeorica_1, 2)` y se agregó como una línea horizontal en el gráfico.
+
+## Parte c
+Ahora pasamos a realizar la parte (C) donde hay que calcular $S_{n}^2$.
+
+```{r include = FALSE}
+# ESTE CÓDIGO NO SE VE]
+
+main2 <- expression(Valores ~ de ~ S[n]^2 ~ para ~ cada ~ n)
+xlab2 <- 'n'
+ylab2 <- expression(S[n]^2)
+```
+
+```{r}
+# Crea vector vacío para Sn empírico
+sn_emp <- c()
+
+# Itinera calculando la Sn para los diferentes N.
+for (i in 1:10) {
+  sn_emp <- c(sn_emp, sd(rgeom(n[i], p1))^2)
+}
+
+# Calcula Sn teórica.
+sn_teo <- (1-p1)/(p1^2)
+```
+```{r, out.width="95%", fig.align = 'center'}
+# Grafica las Sn empíricas y añade línea horizontal en el valor de Sn teórico.
+par(mar = c(3,5,3,5))
+plot(n, sn_emp, xlab=xlab2, ylab=ylab2, main=main2,
+     ylim=c(min(sn_emp) - min(sn_emp)/4,
+            max(sn_emp) + (max(sn_emp)/4)), pch=19, cex=1.5)
+axis(side = 1, at = n)
+abline(h = sn_teo, lwd=2)
+```
+El valor de la varianza teórica es igual a `r round(sn_teo, 2)` y se agrego como una línea paralela en el gráfico.
+
+## Conclusiones {-}
+
+Se puede observar en el gráfico como $\bar{X}_n\rightarrow \mu$ y se espera que cuantas más veces se replique el experimento, los valores teóricos se parecerán mas a $\mu$.
+
+# Ejercicio 3: *Teorema Central del Límite*
+Nuestro grupo utiliza la distribución exponencial con $\lambda = 8.5$
+
+## Parte 1
+
+```{r}
+lambda <- 8.5
+n3 <- 1000
+
+# Genera la distribución F.
+F <- rexp(n3, lambda)
+```
+
+Las cinco primeras muestras aleatorias de F son:
+
+```{r echo=FALSE}
+letras <- 1:5
+for (letra in letras) {
+  cat(paste(' [F',letra," = ", head(round(F, 4), 5)[letra],"]", sep=""))
+}
+```
+
+```{r}
+# Calcula esperanza empírica.
+aTecho <- mean(F)
+
+# Calcula esperanza teórica.
+a <- 1/lambda
+
+# Desvío estándar teórico
+sigma <- 1/(lambda^2)
+
+# Valor estandarizado de la media empírica.
+
+aTecho_standarizada <- (sqrt(n3)*(aTecho - a))/sigma
+```
+
+Los resultados son:
+
+$\hat{a} =$ `r round(aTecho, 3)`.
+
+$a =$ `r round(a, 3)`.
+
+$\sigma=$ `r round(sigma, 3)`
+
+Y el valor estandarizado de la media empírica $\sqrt{n}(\hat{a}-a)/\sigma =$ `r round(aTecho_standarizada, 3)`
+
+## Parte 2
+
+```{r, echo=FALSE}
+main3 <- "Histograma de los valores estandarizados"
+xlab3 <- "Valores estandarizados"
+ylab3 <- "Densidad"
+colores <- c("#fafa6e", "#d7f171", "#b5e877", "#95dd7d", "#77d183", "#5bc489", "#3fb78d", "#23aa8f", "#009c8f", "#008d8c", "#007f86", "#0b717e", "#1c6373", "#255566", "#2a4858")
+```
+
+```{r}
+
+# Preparativos
+k <- 1000
+val_estandarizados <- c()
+
+# Itinera para crear 1000 muestras con un n de 100 cada una.
+for (muestra in 1:k) {
+  Fi <- rexp(n3, lambda)
+  val_estandarizados <- c(val_estandarizados, ((sqrt(n3))*(mean(Fi) - a))/ sigma)
+}
+```
+```{r, out.width="95%", fig.align = 'center'}
+# Histograma de los valores estandarizados y superpone la densidad normal estándar.
+par(mar = c(5,5,5,5))
+hist(val_estandarizados, freq = FALSE, ylim = c(0, .05), main=main3, xlab=xlab3, ylab=ylab3, col=colores)
+curve(dnorm(x, sd = sd(val_estandarizados)), add = TRUE, lwd=2, col = "#0d2342")
+```
+Superpuesto se observa la densidad normal estándar.
+
+## Conclusiones {-}
+El valor estandarizado determina cuánto varía o se desvía una distribución del promedio. Se observa como $\sqrt{n}(\frac{\bar{X}_n-a}{\sigma })$ tiende o se parece a la $\mathcal{N}(0,1)$. Por lo tanto el histograma que se observa representa la forma de una $\mathcal{N}(0,1)$
